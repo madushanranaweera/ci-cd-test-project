@@ -1,5 +1,5 @@
 pipeline {
-	agent none  // ← No global agent
+	agent any  // ← Run everything on Jenkins host directly
 
 	environment {
 		IMAGE_NAME = 'cicd-test-project'
@@ -11,38 +11,25 @@ pipeline {
 	stages {
 
 		stage('Checkout') {
-			agent any  // ← Runs on Jenkins host
 			steps {
 				git branch: 'main', url: 'https://github.com/madushanranaweera/ci-cd-test-project.git'
-				stash includes: '**', name: 'source-code'  // ← Save files for next stage
 			}
 		}
 
 		stage('Build with Maven') {
-			agent {
-				docker {
-					image 'maven:3.9.2-openjdk-21'
-					args '-v $HOME/.m2:/root/.m2'  // Cache Maven deps
-				}
-			}
 			steps {
-				unstash 'source-code'  // ← Restore files
-				sh 'mvn clean package -DskipTests'
-				stash includes: 'target/*.jar', name: 'jar-file'  // ← Save JAR
+				// Run Maven inside a temporary Docker container
+				sh "docker run --rm -v \${WORKSPACE}:/app -w /app maven:3.9.2-openjdk-21 mvn clean package -DskipTests"
 			}
 		}
 
 		stage('Build Docker Image') {
-			agent any  // ← Runs on Jenkins host (has Docker)
 			steps {
-				unstash 'source-code'
-				unstash 'jar-file'  // ← Restore JAR into workspace
 				sh "docker build -t ${IMAGE_NAME}:latest ."
 			}
 		}
 
 		stage('Deploy Docker Container') {
-			agent any  // ← Runs on Jenkins host (has Docker)
 			steps {
 				sh "docker stop ${CONTAINER_NAME} || true"
 				sh "docker rm ${CONTAINER_NAME} || true"
@@ -53,7 +40,7 @@ pipeline {
 
 	post {
 		success {
-			echo 'Build, Docker image, and container deployment succeeded!'
+			echo 'Deployment succeeded!'
 		}
 		failure {
 			echo 'Something went wrong. Check the logs.'
