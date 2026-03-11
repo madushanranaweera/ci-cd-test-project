@@ -1,5 +1,5 @@
 pipeline {
-	agent any  // ← Run everything on Jenkins host directly
+	agent any
 
 	environment {
 		IMAGE_NAME = 'cicd-test-project'
@@ -18,8 +18,7 @@ pipeline {
 
 		stage('Build with Maven') {
 			steps {
-				// Run Maven inside a temporary Docker container
-				sh "docker run --rm -v \${WORKSPACE}:/app -w /app maven:3.9.2-openjdk-21 mvn clean package -DskipTests"
+				sh "docker run --rm -v \${WORKSPACE}:/app -w /app maven:3.9-eclipse-temurin-21 mvn clean package -DskipTests"
 			}
 		}
 
