@@ -5,7 +5,7 @@ pipeline {
 		IMAGE_NAME = 'cicd-test-project'
 		CONTAINER_NAME = 'cicd-test-project'
 		HOST_PORT = '8081'
-		CONTAINER_PORT = '8080'
+		CONTAINER_PORT = '8081'
 	}
 
 	stages {
