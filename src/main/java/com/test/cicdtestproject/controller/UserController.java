@@ -10,6 +10,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
     @GetMapping
     public ResponseEntity<?> getUsers() {
-        return ResponseEntity.ok("user");
+        return ResponseEntity.ok("get user");
     }
 }
